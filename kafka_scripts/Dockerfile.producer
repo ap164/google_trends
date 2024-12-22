@@ -1,0 +1,15 @@
+# Użyj oficjalnego obrazu Python jako bazowego
+FROM python:3.10-slim
+
+# Ustaw katalog roboczy
+WORKDIR /usr/src/app
+
+# Skopiuj plik requirements.txt i zainstaluj zależności
+COPY requirements_kafka.txt ./
+RUN pip install --no-cache-dir -r requirements_kafka.txt
+
+# Skopiuj cały kod aplikacji
+COPY . .
+
+# Ustaw uruchamianie właściwego skryptu
+CMD ["python", "email_csv_producer_streaming1.py"]

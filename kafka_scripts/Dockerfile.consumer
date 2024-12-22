@@ -1,0 +1,15 @@
+# Użyj obrazu Python jako bazowego
+FROM python:3.10-slim
+
+# Ustaw katalog roboczy
+WORKDIR /usr/src/app
+
+# Skopiuj plik requirements.txt i zainstaluj zależności
+COPY requirements_kafka.txt ./
+RUN pip install --no-cache-dir -r requirements_kafka.txt
+
+# Skopiuj kod aplikacji
+COPY . .
+
+# Ustaw skrypt do uruchomienia konsumenta
+CMD ["python", "csv_consumer1.py"]

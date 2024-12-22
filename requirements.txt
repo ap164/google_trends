@@ -1,0 +1,11 @@
+psycopg2-binary
+pytrends
+Flask
+SQLAlchemy<2.0
+phonenumbers
+db
+confluent-kafka
+pandas
+requests
+imapclient
+pyzmail36

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zarządzanie klientami i kampaniami</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4285F4;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #3273dc;
+        }
+        .radio-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .radio-group label {
+            margin-right: 20px;
+            font-weight: normal;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+        }
+        .success-message {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5em;
+            color: #73ca87; /* Zielony kolor dla pozytywnego komunikatu */
+            background-color: #d4edda; /* Jasne tło dla podkreślenia */
+            padding: 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            form {
+                padding: 20px;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <script>
+        function toggleForm() {
+            var clientExists = document.querySelector('input[name="client_exists"]:checked').value;
+            if (clientExists === "yes") {
+                document.getElementById('search_client_form').style.display = 'block';
+                document.getElementById('add_client_form').style.display = 'none';
+            } else {
+                document.getElementById('search_client_form').style.display = 'none';
+                document.getElementById('add_client_form').style.display = 'block';
+            }
+        }
+
+        function updateInputType() {
+            var searchOption = document.getElementById('search_option').value;
+            var searchInput = document.getElementById('search_value');
+            if (searchOption === 'id_klienta') {
+                searchInput.type = 'number';
+            } else if (searchOption === 'nazwa_klienta') {
+                searchInput.type = 'text';
+            }
+        }
+        // Zmienna do śledzenia, czy pola dat zostały dotknięte
+        var phoneTouched = false;
+
+        // Centralna funkcja walidująca wszystkie pola
+        function validateForm() {
+            var phoneValid = validatePhoneNumber();
+            var datesValid = validateDates();
+
+            var submitButtonClient = document.getElementById('submit-btn');
+            var submitButtonProduct = document.getElementById('submit-product-btn');
+
+            if (submitButtonClient) {
+                submitButtonClient.disabled = !phoneValid;
+            }
+            if (submitButtonProduct) {
+                submitButtonProduct.disabled = !datesValid;
+            }
+        }
+
+
+
+        // Funkcja walidująca numer telefonu
+        function validatePhoneNumber() {
+            var phoneInput = document.getElementById('nowy_numer_kontaktowy');
+            var phoneRegex = /^\+?[0-9]{9,15}$/;
+            var errorMessage = document.getElementById('error-message');
+            
+            // Jeśli pole numeru telefonu nie zostało jeszcze dotknięte, nie pokazuj błędu
+            if (!phoneTouched) {
+                errorMessage.style.display = 'none';
+                return false;
+            }
+
+            // Jeśli numer jest niepoprawny, pokaż błąd
+            if (!phoneRegex.test(phoneInput.value)) {
+                errorMessage.style.display = 'inline';
+                return false;  // Niepoprawny numer
+            } else {
+                errorMessage.style.display = 'none';
+                return true;  // Poprawny numer
+            }
+        }
+        // Funkcja walidująca daty startu i końca kampanii
+        function validateDates() {
+            var startDate = document.getElementById('nowa_Data_startu_kampanii').value;
+            var endDate = document.getElementById('nowa_Data_konca_kampanii').value;
+            var dateErrorMessage = document.getElementById('date-error-message');
+
+            if (startDate && endDate) {
+                var start = new Date(startDate);
+                var end = new Date(endDate);
+
+                if (start > end) {
+                    dateErrorMessage.style.display = 'inline';
+                    return false;  // Błędne daty
+                } else {
+                    dateErrorMessage.style.display = 'none';
+                    return true;  // Poprawne daty
+                }
+            } else {
+                dateErrorMessage.style.display = 'none';  // Brak dat
+                return false;
+            }
+        }
+
+    </script>
+    <h1>Zarządzanie klientami i kampaniami</h1>
+
+    <!-- Pytanie początkowe: Czy klient istnieje? -->
+    <form method="post">
+        <label>Czy Twój klient jest juz zarejestrowany?</label>
+        <div class="radio-group">
+            <input type="radio" id="client_exists_yes" name="client_exists" value="yes" onclick="toggleForm()" required {% if client_found == True %}checked{% endif %}>
+            <label for="client_exists_yes">Tak</label>
+            <input type="radio" id="client_exists_no" name="client_exists" value="no" onclick="toggleForm()" required {% if client_found == False %}checked{% endif %}>
+            <label for="client_exists_no">Nie</label>
+        </div>
+        <input type="submit" value="Dalej">
+    </form>
+
+    <!-- Formularz wyszukiwania klienta, wyświetlany jeśli klient istnieje -->
+    <div id="search_client_form" style="display: none;">
+        <h2>Wyszukaj klienta</h2>
+
+        <!-- Formularz wyszukiwania klienta -->
+        <form method="post">
+            <label for="search_option">Wyszukaj klienta po:</label>
+            <select id="search_option" name="search_option" onchange="updateInputType()">
+                <option value="id_klienta">ID Klienta</option>
+                <option value="nazwa_klienta">Nazwa Klienta</option>
+            </select>
+
+            <label for="search_value">Wartość wyszukiwania:</label>
+            <input type="text" id="search_value" name="search_value" placeholder="Wprowadź wartość" required>
+
+            <input type="submit" name="search_client" value="Szukaj klienta">
+        </form>
+
+        <!-- Komunikat, gdy klient nie został znaleziony -->
+        {% if client_not_found %}
+            <p class="error-message">Nie znaleziono klienta. Spróbuj ponownie lub dodaj nowego klienta.</p>
+        {% endif %}
+    </div>
+
+    <!-- Formularz dodawania klienta, wyświetlany jeśli klient nie istnieje -->
+    <div id="add_client_form" style="display: none;">
+        <h2>Dodaj nowego klienta</h2>
+        <form method="post">
+            <label for="nowy_nazwa_klienta">Nazwa klienta:</label>
+            <input type="text" id="nowy_nazwa_klienta" name="nowy_nazwa_klienta" required>
+
+            <label for="nowy_nip_klienta">NIP klienta:</label>
+            <input type="number" id="nowy_nip_klienta" name="nowy_nip_klienta" required>
+
+            <label for="nowy_typ_klienta">Typ klienta:</label>
+            <select id="nowy_typ_klienta" name="nowy_typ_klienta" required>
+                <option value="" disabled selected>Wybierz typ</option>
+                <option value="influencer">influencer</option>
+                <option value="biznes">biznes</option>
+                <option value="start up">start up</option>
+                <option value="sklep">sklep</option>
+                <option value="ekspert">ekspert</option>
+            </select>
+
+            <label for="nowy_osoba_kontaktowa">Osoba kontaktowa:</label>
+            <input type="text" id="nowy_osoba_kontaktowa" name="nowy_osoba_kontaktowa" required>
+
+            <label for="nowy_numer_kontaktowy">Numer kontaktowy:</label>
+            <input type="text" id="nowy_numer_kontaktowy" name="nowy_numer_kontaktowy" oninput="validatePhoneNumber()" value="{{ nowy_numer_kontaktowy }}" required pattern="^\+?[0-9]{9,15}$">
+            <span id="error-message" style="color: red; display: none;">Zły numer telefonu. Proszę wprowadzić poprawny numer.</span>
+            <!-- {% if zly_numer %}
+                <p class="error-message" style="color: red;">Numer telefonu jest niepoprawny. Proszę wprowadzić poprawny numer (9-15 cyfr).</p>
+            {% endif %} -->
+
+            <label for="nowy_mail_kontaktowy">Email kontaktowy:</label>
+            <input type="email" id="nowy_mail_kontaktowy" name="nowy_mail_kontaktowy" required>
+
+            <input type="submit" name="add_client" id="submit-btn" value="Dodaj klienta">
+        </form>
+    </div>
+    <!-- Formularz dodawania produktu, wyświetlany po zdefiniowaniu klienta  -->
+    {% if current_client %}
+        {% if product_added_successfully %}
+            <p class="success-message">Kampania została dodana pomyślnie.</p>
+        {% elif not product_added_successfully %}
+            <div id="add_product_form">
+                <h2>Dodaj kampanię marketingową dla {{ current_client.nazwa_klienta }}</h2>
+                <form method="post" onsubmit="validateForm(event)">
+                    <label for="nowa_nazwa_kampanii">Nazwa kampanii:</label>
+                    <input type="text" id="nowa_nazwa_kampanii" name="nowa_nazwa_kampanii" required>
+
+                    <label for="nowa_Data_startu_kampanii">Data startu kampanii:</label>
+                    <input type="date" id="nowa_Data_startu_kampanii" name="nowa_Data_startu_kampanii" required oninput="validateDates()" value="{{ nowa_Data_startu_kampanii }}">
+                    <span id="dateErrorMessage" style="color: red; display: none;">Data startu kampanii musi być wcześniejsza niż data końca kampanii.</span>
+
+                    <label for="nowa_Data_konca_kampanii">Data końca kampanii:</label>
+                    <input type="date" id="nowa_Data_konca_kampanii" name="nowa_Data_konca_kampanii" required oninput="validateDates()" value="{{ nowa_Data_konca_kampanii }}">
+                    <span id="dateErrorMessage" style="color: red; display: none;">Data startu kampanii musi być wcześniejsza niż data końca kampanii.</span>
+
+                    {% if zasada_dat_koniec_start %}
+                        <p id="date-error-message" class="error-message" style="display: inline;">
+                            Data startu kampanii musi być wcześniejsza niż data końca kampanii.
+                        </p>
+                    {% endif %}
+
+                    <label for="nowy_Cel_kampanii">Cel kampanii:</label>
+                    <select id="nowy_Cel_kampanii" name="nowy_Cel_kampanii" required>
+                        {% for cele_kampanii in dag_runs %}
+                            <option value="{{ cele_kampanii.id_celu }}">{{ cele_kampanii.nazwa_celu }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="hidden" name="client_id" value="{{ current_client.id_klienta }}">
+
+                    <label for="nowy_Budzet_kampanii">Budżet kampanii:</label>
+                    <input type="number" id="nowy_Budzet_kampanii" name="nowy_Budzet_kampanii" step="0.01" min="0.01" required>
+
+                    <label for="nowa_Waluta_rozliczenia">Waluta rozliczenia:</label>
+                    <select id="nowa_Waluta_rozliczenia" name="nowa_Waluta_rozliczenia" required>
+                        <option value="" disabled selected>Wybierz walutę</option>
+                        <option value="PLN">PLN - Polski Złoty</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="USD">USD - Dolar Amerykański</option>
+                        <option value="GBP">GBP - Funt Brytyjski</option>
+                    </select>
+                    <input type="submit" name="add_product" id="submit-product-btn" value="Dodaj kampanię">
+                </form>
+            </div>
+            {% if zasada_dat_koniec_start %}
+                <p class="error-message">Kampania nie została dodana.</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  airflow-init:
+    build:
+      context: .
+    command: ["airflow", "db", "init"]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_secret_key_here
+    depends_on:
+      - postgres
+
+  webserver:
+    build:
+      context: .
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_secret_key_here
+    ports:
+      - "8080:8080"
+    command: ["airflow", "webserver"]
+    depends_on:
+      - airflow-init
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+  scheduler:
+    build:
+      context: .
+    command: ["airflow", "scheduler"]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_secret_key_here
+    depends_on:
+      - webserver
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+  triggerer:
+    build:
+      context: .
+    command: ["airflow", "triggerer"]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: my_secret_key_here
+    depends_on:
+      - webserver
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+  webapp:
+    build:
+      context: .
+    command: ["python", "app.py"]
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - ./zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - kafka-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./kafka_data:/var/lib/kafka/data
+    networks:
+      - kafka-network
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka-client:
+    image: python:3.10
+    volumes:
+      - ./kafka_scripts:/usr/src/app
+    working_dir: /usr/src/app
+    depends_on:
+      - kafka
+    stdin_open: true
+    tty: true
+    networks:
+      - kafka-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - kafka-network
+
+  email-producer:
+    build:
+      context: ./kafka_scripts
+      dockerfile: Dockerfile.producer
+    container_name: email-producer
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
+
+  email-consumer:
+    build:
+      context: ./kafka_scripts
+      dockerfile: Dockerfile.consumer
+    container_name: email-consumer
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
+
+
+networks:
+  kafka-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  kafka_data:
+  zookeeper_data:
