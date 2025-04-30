@@ -39,7 +39,7 @@ def send_email(subject, message, recipient_email):
     except Exception as e:
         print(f"Nie udało się wysłać e-maila: {e}")
 
-# Funkcja do pobierania danych z Pytrends i zapisywania do PostgreSQL
+# Funkcja do pobierania danych xz Pytrends i zapisywania do PostgreSQL
 def fetch_and_store_pytrends():
     # Połączenie z bazą danych PostgreSQL w Dockerze
     try:
@@ -63,7 +63,7 @@ def fetch_and_store_pytrends():
         pytrends = TrendReq(hl='pl-PL', tz=360, timeout=(10, 25))
 
         # Lista słów kluczowych
-        kw_list = ["studia"]  # Lista słów kluczowych
+        kw_list = ["apple"]  # Lista słów kluczowych
 
         for slowo in kw_list:
             # Ustawienia: Polska, dane z ostatnich 24 godzin (Google search)

@@ -1,47 +1,39 @@
-# Użyj oficjalnego obrazu Apache Airflow jako bazowego
-FROM apache/airflow:2.6.3
+# ✅ Bazowy obraz Apache Airflow (nowsza wersja)
+FROM apache/airflow:2.8.1
 
-# Przełącz na użytkownika root, aby zainstalować pakiety systemowe
+# ✅ Przełącz na użytkownika root, aby instalować systemowe zależności
 USER root
 
-# Zainstaluj zależności systemowe wymagane przez confluent-kafka oraz supervisord
+# ✅ Instalacja zależności systemowych dla Kafka i supervisord w jednej warstwie
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
     librdkafka-dev \
-    supervisor \
-    netcat \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# Przełącz z powrotem na użytkownika airflow
+# ✅ Przełącz z powrotem na użytkownika airflow
 USER airflow
 
-# Ustaw katalog roboczy
+# ✅ Ustaw katalog roboczy
 WORKDIR /app
 
-# Skopiuj plik requirements.txt do obrazu
+# ✅ Skopiuj plik requirements.txt i zainstaluj zależności Python w jednej warstwie
 COPY requirements.txt .
-
-# Zainstaluj pakiety Python z requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Zainstaluj dodatkowe pakiety Python, w tym Flask, psycopg2-binary, biblioteki związane z Kafka
-RUN pip install --no-cache-dir Flask psycopg2-binary confluent-kafka pandas requests imapclient
-
-# Skopiuj pliki aplikacji Flask
+# ✅ Skopiuj aplikację Flask i skrypty Kafka producer/consumer w jednej warstwie
 COPY webapp/ /app/
-
-# Skopiuj skrypty producenta i konsumenta Kafka
 COPY kafka_scripts/ /app/kafka_scripts/
 
-# Skopiuj plik konfiguracyjny supervisord
+# ✅ Skopiuj konfigurację supervisorda
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Ustaw zmienną środowiskową PYTHONPATH, aby uwzględnić katalog /app
+# ✅ Ustaw PYTHONPATH, żeby `/app` był widoczny w Pythonie
 ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-# Otwórz potrzebne porty
+# ✅ Otwórz porty: 8080 (Airflow) i 5001 (webapp)
 EXPOSE 8080 5001
 
-# Ustaw domyślną komendę do uruchomienia supervisord
+# ✅ Uruchom supervisord jako domyślną komendę
 CMD ["/usr/bin/supervisord"]
