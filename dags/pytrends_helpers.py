@@ -1,16 +1,13 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
+import os
 import psycopg2
-from pytrends.request import TrendReq
 import smtplib
+from pytrends.request import TrendReq
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-import os
 
-# Załadowanie zmiennych z pliku .env
 load_dotenv()
+
 
 def send_email(subject, message, recipient_email):
     sender_email = os.getenv("SENDER_EMAIL")  # Adres e-mail pobrany z pliku .env
@@ -63,7 +60,7 @@ def fetch_and_store_pytrends():
         pytrends = TrendReq(hl='pl-PL', tz=360, timeout=(10, 25))
 
         # Lista słów kluczowych
-        kw_list = ["google"]  # Lista słów kluczowych
+        kw_list = ["b2b"]  # Lista słów kluczowych
 
         for slowo in kw_list:
             # Ustawienia: Polska, dane z ostatnich 24 godzin (Google search)
@@ -116,26 +113,3 @@ def fetch_and_store_pytrends():
             connection.close()
         print("Połączenie z bazą danych zostało zamknięte.")
  
-default_args = {
-    'owner': 'admin',
-    'depends_on_past': False,
-    'start_date': datetime(2024, 9, 25),  
-    'email_on_failure': True,
-    'email': ['prusa5100@gmail.com'],  
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
-
-# Define the DAG
-with DAG(
-    dag_id='pytrends_to_postgres',
-    default_args=default_args,
-    description='Pobieranie danych z Pytrends i zapis do PostgreSQL',  
-    schedule_interval= None, #'0 08 * * *',  
-    catchup=False  
-) as dag:  
-    run_pytrends = PythonOperator(
-        task_id='fetch_and_store_pytrends',
-        python_callable=fetch_and_store_pytrends,
-    )
