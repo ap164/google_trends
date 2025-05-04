@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator # type: ignore
 from datetime import datetime, timedelta
 import psycopg2
 from pytrends.request import TrendReq
@@ -9,8 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import os
 
-# Załadowanie zmiennych z pliku .env
-load_dotenv()
+load_dotenv(dotenv_path="/Users/aniaprus/airflow-docker/.env")
 
 def send_email(subject, message, recipient_email):
     sender_email = os.getenv("SENDER_EMAIL")  # Adres e-mail pobrany z pliku .env
@@ -27,7 +26,7 @@ def send_email(subject, message, recipient_email):
     msg['Subject'] = subject
     msg.attach(MIMEText(message, 'plain'))
 
-    try:
+    try:            
         # Połączenie z serwerem SMTP GMX
         server = smtplib.SMTP('mail.gmx.com', 587)  # Użycie serwera SMTP GMX
         server.starttls()  # Inicjalizacja bezpiecznego połączenia TLS
@@ -44,10 +43,10 @@ def fetch_and_store_pytrends():
     # Połączenie z bazą danych PostgreSQL w Dockerze
     try:
         connection = psycopg2.connect(
-            host="postgres",  # Nazwa usługi Docker dla PostgreSQL
-            database="airflow",  # Nazwa bazy danych
-            user="airflow",  # Użytkownik
-            password="airflow"  # Hasło
+            host=os.getenv("POSTGRES_HOST"),
+            database=os.getenv("POSTGRES_DB"),
+            user=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD") 
         )
         cursor = connection.cursor()
         print("Połączono z bazą danych PostgreSQL")
@@ -56,14 +55,14 @@ def fetch_and_store_pytrends():
         return
 
     # Email odbiorcy
-    recipient_email = "prusa5100@gmail.com"
+    recipient_email = os.getenv("RECIPIENT_EMAIL")  
     
     try:
         # Inicjalizacja Pytrends
         pytrends = TrendReq(hl='pl-PL', tz=360, timeout=(10, 25))
 
         # Lista słów kluczowych
-        kw_list = ["google"]  # Lista słów kluczowych
+        kw_list = ["iphone"]  # Lista słów kluczowych
 
         for slowo in kw_list:
             # Ustawienia: Polska, dane z ostatnich 24 godzin (Google search)
@@ -129,7 +128,7 @@ default_args = {
 
 # Define the DAG
 with DAG(
-    dag_id='pytrends_to_postgres',
+    dag_id='arch_pytrends_to_postgres',
     default_args=default_args,
     description='Pobieranie danych z Pytrends i zapis do PostgreSQL',  
     schedule_interval= None, #'0 08 * * *',  

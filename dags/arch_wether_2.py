@@ -9,7 +9,7 @@ import pandas as pd
     catchup=False,
     max_active_runs=1
 )
-def ppppp():
+def test_wether():
     @task()
     def extract_data():
         # Print message, return a response
@@ -55,4 +55,4 @@ def ppppp():
 
 
 # Allow the DAG to be run
-ppppp()
+test_wether()

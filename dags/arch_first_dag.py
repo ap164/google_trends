@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.operators.bash import BashOperator # type: ignore
 
 default_args = {
     'owner': 'admin',
@@ -9,7 +9,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id='first_dag_v3',
+    dag_id='test',
     default_args=default_args,
     description="first dag",  
     start_date=datetime(2023, 12, 19),

@@ -52,6 +52,8 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+    env_file:
+      - .env
 
   airflow-scheduler:
     build:
@@ -66,17 +68,19 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+    env_file:
+      - .env
 
   webapp:
     build:
-      context: .
+      context: ./webapp
     command: ["python", "app.py"]
     ports:
       - "5001:5001"
     depends_on:
       - postgres
     volumes:
-      - .:/app
+      - ./webapp:/app
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

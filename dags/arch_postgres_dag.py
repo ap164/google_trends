@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator # type: ignore
 
 default_args = {
     'owner': 'admin',
@@ -11,7 +11,7 @@ default_args = {
 with DAG(
     dag_id='123',
     default_args=default_args,
-    description="dag_with_postgres",
+    description="arch_postgres_check",
     start_date=datetime(2024, 7, 18),
     schedule_interval='@daily',
     catchup=False  # To prevent backfilling of past dates

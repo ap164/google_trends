@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator # type: ignore
 from datetime import datetime, timedelta
 
 # Funkcja Python, która będzie wykonywana w zadaniu

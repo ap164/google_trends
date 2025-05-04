@@ -1,115 +1,142 @@
 import os
+import logging
 import psycopg2
 import smtplib
 from pytrends.request import TrendReq
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+from config import (
+    POSTGRES_HOST,
+    POSTGRES_DB,
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    SENDER_EMAIL,
+    SENDER_EMAIL_PASSWORD,
+    RECIPIENT_EMAIL,
+    PYTRENDS_TIMEOUT,
+    LOG_LEVEL,
+    PYTRENDS_CONFIGS
+)
 
-load_dotenv()
+# Konfiguracja logowania
+logging.basicConfig(level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
-
+# Funkcja do wysyłania e-maili
 def send_email(subject, message, recipient_email):
-    sender_email = os.getenv("SENDER_EMAIL")  # Adres e-mail pobrany z pliku .env
-    sender_password = os.getenv("SENDER_EMAIL_PASSWORD")  # Hasło pobrane z pliku .env
-
-    if not sender_email or not sender_password:
-        print("Brak danych do wysłania e-maila. Sprawdź konfigurację pliku .env.")
+    """Wysyła e-mail z podanym tematem i treścią."""
+    if not SENDER_EMAIL or not SENDER_EMAIL_PASSWORD:
+        logger.error("Brak danych do wysłania e-maila. Sprawdź konfigurację.")
         return
 
-    # Tworzenie wiadomości
     msg = MIMEMultipart()
-    msg['From'] = sender_email
+    msg['From'] = SENDER_EMAIL
     msg['To'] = recipient_email
     msg['Subject'] = subject
     msg.attach(MIMEText(message, 'plain'))
 
     try:
-        # Połączenie z serwerem SMTP GMX
-        server = smtplib.SMTP('mail.gmx.com', 587)  # Użycie serwera SMTP GMX
-        server.starttls()  # Inicjalizacja bezpiecznego połączenia TLS
-        server.login(sender_email, sender_password)  # Logowanie na konto GMX
-        text = msg.as_string()
-        server.sendmail(sender_email, recipient_email, text)  # Wysyłanie wiadomości
-        server.quit()  # Zakończenie połączenia
-        # print("Email został wysłany.")
+        with smtplib.SMTP('mail.gmx.com', 587) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_EMAIL_PASSWORD)
+            server.sendmail(SENDER_EMAIL, recipient_email, msg.as_string())
+        logger.info(f"E-mail został wysłany do {recipient_email} z tematem: {subject}")
     except Exception as e:
-        print(f"Nie udało się wysłać e-maila: {e}")
+        logger.error(f"Nie udało się wysłać e-maila: {e}")
 
-# Funkcja do pobierania danych xz Pytrends i zapisywania do PostgreSQL
-def fetch_and_store_pytrends():
-    # Połączenie z bazą danych PostgreSQL w Dockerze
+# Funkcja do połączenia z PostgreSQL
+def connect_to_postgres():
+    """Łączy się z bazą danych PostgreSQL."""
     try:
         connection = psycopg2.connect(
-            host="postgres",  # Nazwa usługi Docker dla PostgreSQL
-            database="airflow",  # Nazwa bazy danych
-            user="airflow",  # Użytkownik
-            password="airflow"  # Hasło
+            host=POSTGRES_HOST,
+            database=POSTGRES_DB,
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
         )
-        cursor = connection.cursor()
-        print("Połączono z bazą danych PostgreSQL")
+        logger.info("Połączono z bazą danych PostgreSQL.")
+        return connection
     except Exception as e:
-        print(f"Błąd połączenia z bazą danych: {e}")
+        logger.error(f"Błąd połączenia z bazą danych: {e}")
+        return None
+
+# Funkcja do pobierania danych z PyTrends
+def fetch_pytrends_data(pytrends, keyword, timeframe, category, geo, gprop):
+    """Pobiera dane z PyTrends dla danego słowa kluczowego."""
+    try:
+        pytrends.build_payload(
+            [keyword],
+            cat=category,
+            timeframe=timeframe,
+            geo=geo,
+            gprop=gprop
+        )
+        interest_over_time = pytrends.interest_over_time()
+        
+        # Logowanie danych zwróconych przez PyTrends
+        if interest_over_time is not None and not interest_over_time.empty:
+            logger.info(f"Dane zwrócone przez PyTrends dla słowa '{keyword}':\n{interest_over_time.head()}")
+        else:
+            logger.warning(f"Brak danych zwróconych przez PyTrends dla słowa '{keyword}'.")
+        
+        return interest_over_time
+    except Exception as e:
+        logger.error(f"Błąd podczas pobierania danych z PyTrends dla słowa '{keyword}': {e}")
+        return None
+
+# Funkcja do przetwarzania i zapisywania danych w PostgreSQL
+def process_and_store_data(cursor, connection, interest_hourly, keyword):
+    """Przetwarza dane i zapisuje je do bazy danych."""
+    try:
+        for index, row in interest_hourly.iterrows():
+            data = index
+            wynik = row[keyword]
+            insert_query = """
+            INSERT INTO dane_w_czasie (data, slowo, wynik) 
+            VALUES (%s, %s, %s)
+            """
+            record_to_insert = (data, keyword, wynik)
+            cursor.execute(insert_query, record_to_insert)
+            connection.commit()
+        logger.info(f"Dane dla słowa '{keyword}' zostały zapisane do tabeli 'dane_w_czasie'.")
+    except Exception as e:
+        logger.error(f"Błąd podczas zapisywania danych dla słowa '{keyword}': {e}")
+
+# Główna funkcja do pobierania i zapisywania danych
+def fetch_and_store_pytrends(configs):
+    """Pobiera dane z PyTrends i zapisuje je do PostgreSQL."""
+    connection = connect_to_postgres()
+    if not connection:
+        logger.error("Nie udało się nawiązać połączenia z bazą danych. Przerywam działanie.")
         return
 
-    # Email odbiorcy
-    recipient_email = "prusa5100@gmail.com"
-    
+    pytrends = TrendReq(tz=360, timeout=PYTRENDS_TIMEOUT)
+
     try:
-        # Inicjalizacja Pytrends
-        pytrends = TrendReq(hl='pl-PL', tz=360, timeout=(10, 25))
+        with connection:
+            cursor = connection.cursor()
+            for config in configs:
+                keywords = config["keywords"]
+                timeframe = config["timeframe"]
+                category = config["category"]
+                geo = config["geo"]
+                gprop = config["gprop"]
 
-        # Lista słów kluczowych
-        kw_list = ["b2b"]  # Lista słów kluczowych
-
-        for slowo in kw_list:
-            # Ustawienia: Polska, dane z ostatnich 24 godzin (Google search)
-            pytrends.build_payload([slowo], cat=0, timeframe='now 1-d', geo='PL-MZ', gprop='youtube')
-
-            interest_over_time = pytrends.interest_over_time()
-            if not interest_over_time.empty:
-                print(f"\nZainteresowanie w czasie dla słowa '{slowo}' (dane minutowe z ostatnich 24 godzin):")
-                print(interest_over_time.head())  # Wyświetla pierwsze 5 wierszy
-
-                # Resample - grupowanie minutowych danych na godziny i liczenie średniej
-                interest_hourly = interest_over_time.resample('H').mean().round(2)
-
-                # Iteracja po wierszach danych przetworzonych godzinowo i zapisanie ich do bazy danych
-                for index, row in interest_hourly.iterrows():
-                    data = index  # Kolumna z resamplowaną datą (godzina)
-                    wynik = row[slowo]  # Kolumna z wynikiem dla danego słowa
-
-                    # SQL do wstawienia danych do tabeli
-                    insert_query = """
-                    INSERT INTO dane_w_czasie (data, slowo, wynik) 
-                    VALUES (%s, %s, %s)
-                    """
-                    record_to_insert = (data, slowo, wynik)
-
-                    # Wykonanie zapytania
-                    cursor.execute(insert_query, record_to_insert)
-                    connection.commit()
-
-                print(f"Dane dla słowa '{slowo}' zostały zapisane do tabeli 'dane_w_czasie'.")
-            else:
-                # Wysłanie e-maila w przypadku braku danych
-                subject = f"Brak danych o zainteresowaniu dla słowa '{slowo}'"
-                message = f"Brak danych o zainteresowaniu w czasie dla słowa '{slowo}'"
-                send_email(subject, message, recipient_email)
-                print(f"Brak danych o zainteresowaniu w czasie dla słowa '{slowo}'.")
-
+                for keyword in keywords:
+                    interest_over_time = fetch_pytrends_data(pytrends, keyword, timeframe, category, geo, gprop)
+                    if interest_over_time is not None and not interest_over_time.empty:
+                        process_and_store_data(cursor, connection, interest_over_time, keyword)
+                    else:
+#                        subject = f"Brak danych o zainteresowaniu dla słowa '{keyword}'"
+#                        message = f"Brak danych o zainteresowaniu w czasie dla słowa '{keyword}'"
+#                        send_email(subject, message, RECIPIENT_EMAIL)
+                        logger.warning(f"Brak danych o zainteresowaniu w czasie dla słowa '{keyword}'.")
     except Exception as e:
-        # Wysłanie e-maila w przypadku błędu
         subject = "Błąd podczas pobierania danych o zainteresowaniu w czasie"
-        message = f"Błąd podczas pobierania danych o zainteresowaniu w czasie: {e}"
-        send_email(subject, message, recipient_email)
-        print(f"Błąd podczas pobierania danych o zainteresowaniu w czasie: {e}")
-
+        message = f"Błąd: {e}"
+        send_email(subject, message, RECIPIENT_EMAIL)
+        logger.error(f"Błąd podczas pobierania danych: {e}")
     finally:
-        # Zamknięcie kursora i połączenia z bazą danych
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
-        print("Połączenie z bazą danych zostało zamknięte.")
- 
+        connection.close()
+        logger.info("Połączenie z bazą danych zostało zamknięte.")
