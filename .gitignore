@@ -1,6 +1,6 @@
 # Ignore environment and secrets files
 .env
-
+.DS_Store
 # Ignore Python virtual environments
 .venv/
 venv/
