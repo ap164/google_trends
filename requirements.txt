@@ -1,24 +1,15 @@
-# ✅ Zależności bazy danych
-
+# Database dependencies
 psycopg2-binary
 apache-airflow
 apache-airflow-providers-postgres
 SQLAlchemy<2.0
 
-# ✅ Zależności do analizy danych
+# Data analysis dependencies
 pandas
 pytrends
 
-# ✅ Zależności do obsługi HTTP i API
+# Other
 requests
-Flask
-
-# ✅ Zależności do obsługi e-mail
-imapclient
-pyzmail36
-
-# ✅ Zależności do obsługi Kafka
-confluent-kafka
-
-# ✅ Inne
-phonenumbers
+pydantic
+python-dotenv
+pyyaml

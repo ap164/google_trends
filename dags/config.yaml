@@ -1,0 +1,79 @@
+log_level: "WARNING"
+
+postgres:
+  host: ${POSTGRES_HOST}
+  db: ${POSTGRES_DB}
+  user: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+
+email:
+  sender: ${SENDER_EMAIL}
+  sender_password: ${SENDER_EMAIL_PASSWORD}
+  recipient: ${RECIPIENT_EMAIL}
+
+pytrends_timeout: [20, 40]
+
+pytrends_configs:
+  - topic: data_visualization
+    keywords: ["power bi", "tableau", "superset", "looker"]
+    interest_by_region:
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 1 * *"
+    interest_over_time:
+      timeframe: "now 1-d"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 2 * *"
+  - topic: data_warehousing
+    keywords: ["gcp", "azure", "AWS", "databricks", "snowflake"]
+    interest_by_region:
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 3 * *"
+    interest_over_time:
+      timeframe: "now 1-d"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 4 * *"
+  - topic: programming_language
+    keywords: ["PYTHon", "java", "sql", "r"]
+    interest_over_time:
+      timeframe: "today 1-m"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 5 * *"
+    interest_by_region:
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "01 15 6 * *"
+  - topic: global_popularity_profession
+    keywords: ["data scientist", "data engineer", "data storyteller", "data analyst", "data architect"]
+    interest_over_time:
+      timeframe: "now 1-d"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "@daily"
+  - topic: dependensy_work
+    keywords: ["remote job", "work-life balance", "wellness", "productivity"]
+    interest_over_time:
+      timeframe: "today 1-m"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "48 8 5 * *"
+  - topic: dependensy_study
+    keywords: ["tutorial", "learn", "course", "training", "webinar"]
+    interest_over_time:
+      timeframe: "today 1-m"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "48 8 6 * *"

@@ -1,3 +1,0 @@
-imapclient
-confluent_kafka
-certifi
