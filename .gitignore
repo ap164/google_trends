@@ -1,40 +1,25 @@
+# Ignore environment and secrets files
 .env
 
-# Ignorujemy katalog(i) z danymi Kafki - w Twoim przypadku to np. kafka_data/
-kafka_data/
-# Jeśli nazwy/ścieżki są inne, np. 'kafka-logs/' albo 'kafka_storage/', dostosuj według potrzeb
-# kafka-logs/
-# kafka_storage/
+# Ignore Python virtual environments
+.venv/
+venv/
 
-# Ignorujemy ewentualne dane Zookeepera
-zookeeper_data/
-# zookeeper-logs/
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
 
-# Ignorujemy pliki tymczasowe, logi, itp.
+# Ignore log and temporary files
 *.log
 *.tmp
 *.bak
 
-# Ignorujemy zależności lub biblioteki, jeśli przechowujesz je lokalnie
+# Ignore dependency and build folders
 libs/
-# lub cokolwiek jest folderem z jarami i binarkami Kafki, jeśli trzymane lokalnie
-# kafka_2.13-3.5.1/
+dist/
+build/
 
-# Ignorujemy pliki binarne, archiwa
+# Ignore binary and archive files
 *.jar
 *.tgz
 *.zip
-
-# Ignorujemy wirtualne środowiska / zależności w Pythonie (jeśli używasz Pythona)
-.venv/
-venv/
-__pycache__/
-*.pyc
-
-# Ignorujemy pliki konfiguracyjne prywatne (np. .env)
-.env
-
-# Inne, opcjonalne wpisy do zignorowania:
-# node_modules/      # jeśli masz Node.js w projekcie
-# build/             # pliki buildów w C/C++/Java
-# dist/
