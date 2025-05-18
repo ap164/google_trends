@@ -3,7 +3,7 @@ import pandas as pd
 from etl.validation import (
     validate_interest_over_time_input,
     validate_interest_by_region_input,
-    to_lowercase,
+    normalize_str_value,
     normalize_schedule_interval
 )
 
@@ -14,8 +14,8 @@ def transform_interest_over_time(data, keyword, channel, schedule_interval):
         logger.info(f"Transforming interest_over_time: '{keyword}'")
 
         # Normalize keyword to lowercase
-        normalized_keyword = to_lowercase(keyword)
-        normalized_channel = to_lowercase(channel)
+        normalized_keyword = normalize_str_value(keyword)
+        normalized_channel = normalize_str_value(channel)
         normalized_schedule_interval = normalize_schedule_interval(schedule_interval)
 
         input_dict = {
@@ -41,8 +41,7 @@ def transform_interest_by_region(data, keyword, schedule_interval):
     try:
         logger.info(f"Transforming interest_by_region: '{keyword}'")
 
-        # Normalize keyword to lowercase
-        normalized_keyword = to_lowercase(keyword)
+        normalized_keyword = normalize_str_value(keyword)
         normalized_schedule_interval = normalize_schedule_interval(schedule_interval)
 
         input_dict = {

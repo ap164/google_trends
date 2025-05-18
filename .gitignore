@@ -3,8 +3,9 @@
 .DS_Store
 # Ignore Python virtual environments
 .venv/
+.venv/lib/python3.10/
 venv/
-
+.vscode
 # Ignore Python cache and compiled files
 __pycache__/
 *.pyc

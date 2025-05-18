@@ -3,13 +3,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# === Helper functions ===
 
-def to_lowercase(value: str) -> str:
-    return value.lower() if isinstance(value, str) else value
+def normalize_str_value(value: str) -> str:
+    return value.strip().lower()
 
 def normalize_country_names(country: str) -> str:
-    return country.strip().title() if isinstance(country, str) else country
+    return country.strip().title() 
 
 def normalize_schedule_interval(schedule_interval: str) -> str:
     if not isinstance(schedule_interval, str):
@@ -51,17 +50,14 @@ def resample_to_hourly(df: pd.DataFrame, value_col: str, keyword: str) -> pd.Dat
             if pd.notnull(min_diff) and min_diff < pd.Timedelta(hours=1):
                 df = (
                     df.set_index("date")
-                    .resample("H")[value_col]
+                    .resample("h")[value_col]
                     .mean()
                     .reset_index()
                 )
-                df[keyword] = df[value_col]
-                df["isPartial"] = False
 
         df[value_col] = df[value_col].apply(
             lambda x: round(float(x), 2) if isinstance(x, (int, float)) else x)
         logger.info(f"Data resampled to hourly for '{keyword}' and values rounded.")
-
     return df
 
 def process_dataframe(data: pd.DataFrame) -> pd.DataFrame:
@@ -69,7 +65,7 @@ def process_dataframe(data: pd.DataFrame) -> pd.DataFrame:
         data = data.reset_index()
 
         if 'date' in data.columns:
-            data['date'] = pd.to_datetime(data['date'], errors='coerce').dt.floor('T')
+            data['date'] = pd.to_datetime(data['date'], errors='coerce').dt.floor('min')
 
         if 'geoName' in data.columns:
             data['geoName'] = data['geoName'].apply(normalize_country_names)
@@ -90,7 +86,7 @@ def validate_base_input(data: dict, resample: bool = False) -> dict:
             raise ValueError(f"Missing required field: {field}")
 
     old_col = data['keyword']
-    new_col = to_lowercase(data['keyword'])
+    new_col = normalize_str_value(data['keyword'])
     if isinstance(data['data'], pd.DataFrame) and old_col in data['data'].columns:
         data['data'] = data['data'].rename(columns={old_col: new_col})
 
@@ -108,7 +104,7 @@ def validate_interest_over_time_input(data: dict) -> dict:
     validated = validate_base_input(data, resample=True)
     if 'channel' not in data:
         raise ValueError("Missing required field: channel")
-    validated['channel'] = to_lowercase(data['channel'])
+    validated['channel'] = normalize_str_value(data['channel'])
     return validated
 
 def validate_interest_by_region_input(data: dict) -> dict:
