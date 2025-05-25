@@ -39,10 +39,6 @@ def normalize_schedule_interval(schedule_interval: str) -> str:
     return schedule_interval
 
 def resample_to_hourly(df: pd.DataFrame, value_col: str, keyword: str) -> pd.DataFrame:
-    """
-    Resamples data to full hours (mean) if the time interval is less than one hour.
-    Rounds the result to two decimal places.
-    """
     if isinstance(df, pd.DataFrame) and "date" in df.columns:
         df["date"] = pd.to_datetime(df["date"])
         if len(df) > 1:
@@ -77,7 +73,6 @@ def process_dataframe(data: pd.DataFrame) -> pd.DataFrame:
 
     return data
 
-# === Input data validation ===
 
 def validate_base_input(data: dict, resample: bool = False) -> dict:
     required_fields = ['data', 'keyword', 'schedule_interval']
@@ -122,6 +117,7 @@ def validate_interest_by_region_input(data: dict) -> dict:
 def convert_region_values_to_int(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
     if value_col in df.columns:
         df[value_col] = df[value_col].apply(
-            lambda x: int(x) if pd.notnull(x) and isinstance(x, float) and x.is_integer() else (int(x) if isinstance(x, int) else None))
+            lambda x: int(round(x)) if pd.notnull(x) and isinstance(x, float) else (int(x) if isinstance(x, int) else None)
+        )
     return df
 

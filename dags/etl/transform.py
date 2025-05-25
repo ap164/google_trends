@@ -13,7 +13,6 @@ def transform_interest_over_time(data, keyword, channel, schedule_interval):
     try:
         logger.info(f"Transforming interest_over_time: '{keyword}'")
 
-        # Normalize keyword to lowercase
         normalized_keyword = normalize_str_value(keyword)
         normalized_channel = normalize_str_value(channel)
         normalized_schedule_interval = normalize_schedule_interval(schedule_interval)

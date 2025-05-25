@@ -10,8 +10,7 @@ pytrends
 
 # Other
 requests
-pydantic
+pydantic<=2.0
 python-dotenv
 pyyaml
 pytest
-pytest-mock

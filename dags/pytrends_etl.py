@@ -35,14 +35,8 @@ def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
             result = extract_interest_over_time(pytrends, keyword, **params)
             if result is None:
                 logger.warning(f"No data for '{keyword}'")
-                # Send email about missing data
-                subject = f"No data for '{keyword}' ({data_type})"
-                message = (
-                    f"Failed to fetch data for keyword '{keyword}' "
-                    f"(Google Trends returned an empty response or error 400)."
-                )
-                send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
-                raise ValueError(message)
+                raise ValueError(f"No data for '{keyword}' ({data_type})")
+
             elif isinstance(result, str):
                 # Here we have an error message, e.g. "The request failed: Google returned a response with code 400"
                 if "429" in result:
@@ -101,11 +95,14 @@ def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
                                     normalized_schedule_interval)
         return "ok"
     except Exception as e:
-        subject = f"ETL error for {data_type} ({keyword})"
-        message = f"An error occurred while processing keyword '{keyword}':\n{e}"
+        message = str(e)
+        if "No data for" in message or "Google Trends returned an empty response" in message:
+            subject = f"No data for '{keyword}' ({data_type})"
+        else:
+            subject = f"ETL error for {data_type} ({keyword})"
         send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
         logger.error(f"Error in ETL process for {data_type} ({keyword}): {e}")
-        raise  # Raise exception so the task is marked as failed
+        raise
 
 def run_etl(config, data_type):
     connection = connect_to_postgres(POSTGRES["host"], POSTGRES["db"], POSTGRES["user"], POSTGRES["password"])
