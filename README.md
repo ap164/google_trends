@@ -46,6 +46,8 @@ An example dashboard created to analyze trends in data visualization tools (Powe
 It is a fully open-source data pipeline project that collects and analyzes search trends from Google Trends using Python, PyTrends, Apache Airflow, and PostgreSQL. Results are visualized with Apache Superset in interactive dashboards for easy trend exploration by time and region.
 
 
+
+
 # PL: 
 
 ## Opis projektu  
