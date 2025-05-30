@@ -8,6 +8,9 @@ from utils import connect_to_postgres, load_config, send_email
 from pytrends.request import TrendReq
 import logging
 import time
+import os
+
+
 
 config = load_config()
 
@@ -17,13 +20,18 @@ EMAIL = config["email"]
 PYTRENDS_CONFIGS = config.get("pytrends_configs", [])
 PYTRENDS_TIMEOUT = tuple(config.get("pytrends_timeout", [20, 40]))
 
+RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
+SENDER_EMAIL_PASSWORD = os.environ.get("SENDER_EMAIL_PASSWORD")
+
 logger = logging.getLogger(__name__)
 
 default_args = {
     'owner': 'admin',
     'depends_on_past': False,
+    'email': [RECIPIENT_EMAIL],
     'email_on_failure': True,
-    'email_on_retry': False,
+    'email_on_retry': True,
     'retries': 1,
     'retry_delay': timedelta(minutes=5)
 }
@@ -130,7 +138,7 @@ for config in PYTRENDS_CONFIGS:
     for data_type in ["interest_over_time", "interest_by_region"]:
         section = config.get(data_type)
         if section and "schedule_interval" in section:
-            dag_id = f"etl_{data_type}_{topic}"
+            dag_id = f"etl_{topic}_{data_type}"
             schedule_interval = section["schedule_interval"]
             dag = create_dag(dag_id, schedule_interval, keywords, config, data_type)
             globals()[dag_id] = dag

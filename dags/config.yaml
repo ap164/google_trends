@@ -41,7 +41,7 @@ pytrends_configs:
       gprop: ""
       schedule_interval: "0 10 * * *"
   - topic: programming_language
-    keywords: ["PYTHon", "java", "sql", "spark"]
+    keywords: ["Python", "java", "sql", "spark"]
     interest_over_time:
       timeframe: "now 1-d"
       category: 0
@@ -53,17 +53,17 @@ pytrends_configs:
       geo: ""
       gprop: ""
       schedule_interval: "0 22 * * *"
-  - topic: global_popularity_profession
+  - topic: pl_popularity_profession
     keywords: ["data scientist", "data engineer", "bi developer", "data analyst", "data architect"]
     interest_over_time:
       timeframe: "now 1-d"
       category: 0
-      geo: ""
+      geo: "PL"
       gprop: ""
       schedule_interval: "@daily"
     interest_by_region:
       category: 0
-      geo: ""
+      geo: "PL"
       gprop: ""
       schedule_interval: "0 23 * * *"
   - topic: dependensy_work
@@ -82,17 +82,3 @@ pytrends_configs:
       geo: ""
       gprop: ""
       schedule_interval: "48 11 6 * *"
-
-  - topic: pl_popularity_profession
-    keywords: ["data scientist", "data engineer", "bi developer", "data analyst", "data architect"]
-    interest_over_time:
-      timeframe: "today 1-m"
-      category: 0
-      geo: "PL"
-      gprop: ""
-      schedule_interval: "0 07 7 * *"
-    interest_by_region:
-      category: 0
-      geo: "PL"
-      gprop: ""
-      schedule_interval: "0 17 * * *"

@@ -7,7 +7,7 @@ def load_interest_over_time(cursor, connection, data, keyword, channel, schedule
     try:
         value_col = [col for col in data.columns if col not in ("index", "date", "isPartial")][0]
         rows = [
-            (row["date"], keyword, row[value_col], channel, schedule_interval, geo_search)
+            (row["date"], keyword, row[value_col], channel, schedule_interval, None if geo_search == '' else geo_search)
             for _, row in data.iterrows()
         ]
         insert_query = """
@@ -33,7 +33,7 @@ def load_interest_by_region(cursor, connection, data, keyword, schedule_interval
         # Get the value column name from dataframe (excluding 'index' and 'geoName')
         value_col = [col for col in data.columns if col not in ("index", "geoName")][0]
         rows = [
-            (row["geoName"], keyword, row[value_col], schedule_interval, today_date, geo_search)
+            (row["geoName"], keyword, row[value_col], schedule_interval, today_date, None if geo_search == '' else geo_search)
             for _, row in data.iterrows()
         ]
         insert_query = """

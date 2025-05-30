@@ -3,6 +3,14 @@ x-airflow-common:
   AIRFLOW__CORE__EXECUTOR: LocalExecutor
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
   AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+  AIRFLOW__EMAIL__EMAIL_BACKEND: airflow.utils.email.send_email_smtp
+  AIRFLOW__SMTP__SMTP_HOST: mail.gmx.com
+  AIRFLOW__SMTP__SMTP_STARTTLS: 'True'
+  AIRFLOW__SMTP__SMTP_SSL: 'False'
+  AIRFLOW__SMTP__SMTP_USER: ${SENDER_EMAIL}
+  AIRFLOW__SMTP__SMTP_PASSWORD: ${SENDER_EMAIL_PASSWORD}
+  AIRFLOW__SMTP__SMTP_PORT: 587
+  AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SENDER_EMAIL}
 
 services:
   postgres:
