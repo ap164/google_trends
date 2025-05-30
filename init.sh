@@ -3,7 +3,7 @@
 
 set -e
 
-# Wczytaj zmienne z pliku .env
+
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
 fi
