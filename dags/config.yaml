@@ -35,7 +35,7 @@ pytrends_configs:
       gprop: ""
       schedule_interval: "0 20 * * *"
     interest_over_time:
-      timeframe: "now 7-d"
+      timeframe: "now 1-d"
       category: 0
       geo: ""
       gprop: ""

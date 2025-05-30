@@ -7,7 +7,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../dags')))
 
-from pytrends_etl import (
+from pipeline_etl_google_trends import (
     handle_etl, 
     run_etl
 )
