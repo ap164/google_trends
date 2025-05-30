@@ -20,47 +20,52 @@ pytrends_configs:
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "01 15 1 * *"
+      schedule_interval: "0 18 * * *"
     interest_over_time:
       timeframe: "now 1-d"
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "01 15 2 * *"
+      schedule_interval: "0 8 * * *"
   - topic: data_warehousing
     keywords: ["gcp", "azure", "AWS", "databricks", "snowflake"]
     interest_by_region:
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "01 15 3 * *"
+      schedule_interval: "0 20 * * *"
+    interest_over_time:
+      timeframe: "now 7-d"
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "0 10 * * *"
+  - topic: programming_language
+    keywords: ["PYTHon", "java", "sql", "spark"]
     interest_over_time:
       timeframe: "now 1-d"
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "01 15 4 * *"
-  - topic: programming_language
-    keywords: ["PYTHon", "java", "sql", "r"]
-    interest_over_time:
-      timeframe: "today 1-m"
-      category: 0
-      geo: ""
-      gprop: ""
-      schedule_interval: "01 15 5 * *"
+      schedule_interval: "0 15 * * *"
     interest_by_region:
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "01 15 6 * *"
+      schedule_interval: "0 22 * * *"
   - topic: global_popularity_profession
-    keywords: ["data scientist", "data engineer", "data storyteller", "data analyst", "data architect"]
+    keywords: ["data scientist", "data engineer", "bi developer", "data analyst", "data architect"]
     interest_over_time:
       timeframe: "now 1-d"
       category: 0
       geo: ""
       gprop: ""
       schedule_interval: "@daily"
+    interest_by_region:
+      category: 0
+      geo: ""
+      gprop: ""
+      schedule_interval: "0 23 * * *"
   - topic: dependensy_work
     keywords: ["remote job", "work-life balance", "wellness", "productivity"]
     interest_over_time:
@@ -68,7 +73,7 @@ pytrends_configs:
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "48 8 5 * *"
+      schedule_interval: "48 11 5 * *"
   - topic: dependensy_study
     keywords: ["tutorial", "learn", "course", "training", "webinar"]
     interest_over_time:
@@ -76,4 +81,18 @@ pytrends_configs:
       category: 0
       geo: ""
       gprop: ""
-      schedule_interval: "48 8 6 * *"
+      schedule_interval: "48 11 6 * *"
+
+  - topic: pl_popularity_profession
+    keywords: ["data scientist", "data engineer", "bi developer", "data analyst", "data architect"]
+    interest_over_time:
+      timeframe: "today 1-m"
+      category: 0
+      geo: "PL"
+      gprop: ""
+      schedule_interval: "0 07 7 * *"
+    interest_by_region:
+      category: 0
+      geo: "PL"
+      gprop: ""
+      schedule_interval: "0 17 * * *"

@@ -36,6 +36,7 @@ def test_normalize_country_names():
     ("0 * * *", "0 * * *"),
     ("0 0 * *", "0 0 * *"),
     ("0 0 *", "0 0 *"),
+    ("0 15 * * *","daily")
 ])
 def test_normalize_schedule_interval(cron, expected):
     assert normalize_schedule_interval(cron) == expected

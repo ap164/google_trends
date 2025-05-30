@@ -35,29 +35,21 @@ def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
             result = extract_interest_over_time(pytrends, keyword, **params)
             if result is None:
                 logger.warning(f"No data for '{keyword}'")
-                raise ValueError(f"No data for '{keyword}' ({data_type})")
-
             elif isinstance(result, str):
-                # Here we have an error message, e.g. "The request failed: Google returned a response with code 400"
                 if "429" in result:
-                    logger.error(f"Error 429 while fetching data for '{keyword}'")
+                    logger.warning(f"Error 429 while fetching data for '{keyword}'")
                     return "429"
+                elif "Google Trends returned an empty response" in result:
+                    logger.warning(f"Google Trends returned an empty response for '{keyword}'")
                 else:
-                    logger.error(f"Error while fetching data for '{keyword}': {result}")
-                    subject = f"Error fetching data for '{keyword}' ({data_type})"
-                    message = (
-                        f"Failed to fetch data for keyword '{keyword}'.\n"
-                        f"Error message: {result}"
-                    )
-                    send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
-                    raise ValueError(message)
+                    logger.warning(f"Unknown error for '{keyword}': {result}")
+                    return "skip"
+
             transformed_data, normalized_schedule_interval, normalized_keyword = transform_interest_over_time(
                 result, keyword,
                 config["interest_over_time"]["gprop"],
-                config["interest_over_time"]["schedule_interval"]
-            )
-            load_interest_over_time(cursor, connection, transformed_data, normalized_keyword,
-                                    config["interest_over_time"]["gprop"], normalized_schedule_interval)
+                config["interest_over_time"]["schedule_interval"])
+            load_interest_over_time(cursor, connection, transformed_data, normalized_keyword, config["interest_over_time"]["gprop"], normalized_schedule_interval, config["interest_over_time"]["geo"])
         elif data_type == "interest_by_region":
             result = extract_interest_by_region(
                 pytrends, keyword,
@@ -67,39 +59,23 @@ def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
             )
             if result is None:
                 logger.warning(f"No data for '{keyword}'")
-                subject = f"No data for '{keyword}' ({data_type})"
-                message = (
-                    f"Failed to fetch data for keyword '{keyword}' "
-                    f"(Google Trends returned an empty response or error 400)."
-                )
-                send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
-                raise ValueError(message)
             elif isinstance(result, str):
                 if "429" in result:
-                    logger.error(f"Error 429 while fetching data for '{keyword}'")
+                    logger.warning(f"Error 429 while fetching data for '{keyword}'")
                     return "429"
+                elif "Google Trends returned an empty response" in result:
+                    logger.warning(f"Google Trends returned an empty response for '{keyword}'")
                 else:
-                    logger.error(f"Error while fetching data for '{keyword}': {result}")
-                    subject = f"Error fetching data for '{keyword}' ({data_type})"
-                    message = (
-                        f"Failed to fetch data for keyword '{keyword}'.\n"
-                        f"Error message: {result}"
-                    )
-                    send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
-                    raise ValueError(message)
+                    logger.warning(f"Unknown error for '{keyword}': {result}")
+                    return "skip"
             transformed_data, normalized_schedule_interval, normalized_keyword = transform_interest_by_region(
                 result, keyword,
-                config["interest_by_region"]["schedule_interval"]
-            )
-            load_interest_by_region(cursor, connection, transformed_data, normalized_keyword,
-                                    normalized_schedule_interval)
-        return "ok"
+                config["interest_by_region"]["schedule_interval"])
+            load_interest_by_region(cursor, connection, transformed_data, normalized_keyword, normalized_schedule_interval,  config["interest_by_region"]["geo"])
+        return "continue"
     except Exception as e:
         message = str(e)
-        if "No data for" in message or "Google Trends returned an empty response" in message:
-            subject = f"No data for '{keyword}' ({data_type})"
-        else:
-            subject = f"ETL error for {data_type} ({keyword})"
+        subject = f"ETL error for {data_type} ({keyword})"
         send_email(subject, message, EMAIL["recipient"], EMAIL["sender"], EMAIL["sender_password"])
         logger.error(f"Error in ETL process for {data_type} ({keyword}): {e}")
         raise

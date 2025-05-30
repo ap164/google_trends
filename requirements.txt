@@ -1,7 +1,7 @@
 # Database dependencies
 psycopg2-binary
 apache-airflow
-apache-airflow-providers-postgres
+apache-airflow-providers-openlineage >= 1.8.0
 SQLAlchemy<2.0
 
 # Data analysis dependencies
@@ -14,3 +14,4 @@ pydantic<=2.0
 python-dotenv
 pyyaml
 pytest
+pytest-mock

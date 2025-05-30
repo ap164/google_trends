@@ -20,7 +20,7 @@ def test_load_interest_over_time_success():
     connection = MagicMock()
     cursor.rowcount = 2
 
-    load_interest_over_time(cursor, connection, data, "test", "web", "daily")
+    load_interest_over_time(cursor, connection, data, "test", "web", "daily","pl")
 
     assert cursor.executemany.called
     assert connection.commit.called
@@ -38,7 +38,7 @@ def test_load_interest_over_time_duplicates_logged():
     cursor.rowcount = 1  
 
     with patch("etl.load.logger") as mock_logger:
-        load_interest_over_time(cursor, connection, data, "test", "web", "daily")
+        load_interest_over_time(cursor, connection, data, "test", "web", "daily","pl")
         assert mock_logger.info.call_count == 2
         assert any(f"Skipped {cursor.rowcount} records due to duplicates" in str(call) for call in mock_logger.info.call_args_list)
 
@@ -52,7 +52,7 @@ def test_load_interest_over_time_missing_column_logs_error():
     connection = MagicMock()
 
     with patch("etl.load.logger") as mock_logger:
-        load_interest_over_time(cursor, connection, data, "test", "web", "daily")
+        load_interest_over_time(cursor, connection, data, "test", "web", "daily","pl")
         assert mock_logger.error.called and "Error while loading interest_over_time" in mock_logger.error.call_args[0][0]
         
 
@@ -66,7 +66,7 @@ def test_load_interest_by_region_success():
     connection = MagicMock()
     cursor.rowcount = 2
 
-    load_interest_by_region(cursor, connection, data, "test", "daily")
+    load_interest_by_region(cursor, connection, data, "test", "daily","pl")
 
     assert cursor.executemany.called
     assert connection.commit.called
@@ -81,7 +81,7 @@ def test_load_interest_by_region_duplicates_logged():
     cursor.rowcount = 1  # 1 inserted, 1 duplicate
 
     with patch("etl.load.logger") as mock_logger:
-        load_interest_by_region(cursor, connection, data, "test", "daily")
+        load_interest_by_region(cursor, connection, data, "test", "daily","pl")
         assert mock_logger.info.call_count == 2
         assert any(f"Skipped {cursor.rowcount} records due to duplicates" in str(call) for call in mock_logger.info.call_args_list)
 
@@ -95,5 +95,5 @@ def test_load_interest_by_region_exception_logged():
 
 
     with patch("etl.load.logger") as mock_logger:
-        load_interest_by_region(cursor, connection, data, "test", "daily")
+        load_interest_by_region(cursor, connection, data, "test", "daily","pl")
         assert mock_logger.error.called and "Error while loading interest_by_region" in mock_logger.error.call_args[0][0]

@@ -84,9 +84,6 @@ def test_handle_etl_number(
         assert mock_transform_time.call_count + mock_transform_region.call_count == 8
         assert mock_load_time.call_count + mock_load_region.call_count == 8
 
-
-
-
 @patch("pytrends_etl.send_email")
 @patch("pytrends_etl.extract_interest_over_time")
 @patch("pytrends_etl.transform_interest_over_time")
@@ -102,20 +99,6 @@ def test_handle_etl_transform_error(
         handle_etl("python", "interest_over_time", mock_config, mock_pytrends, mock_cursor, mock_connection)
     mock_send_email.assert_called_once()
 
-
-
-@patch("pytrends_etl.send_email")
-@patch("pytrends_etl.extract_interest_over_time")
-def test_handle_etl_no_data(
-    mock_extract, mock_send_email, mock_config, mock_pytrends, mock_cursor, mock_connection
-):
-    mock_extract.return_value = None
-    with pytest.raises(ValueError):
-        handle_etl("python", "interest_over_time", mock_config, mock_pytrends, mock_cursor, mock_connection)
-    mock_send_email.assert_called_once()
-
-
-
 @patch("pytrends_etl.connect_to_postgres")
 @patch("pytrends_etl.handle_etl")
 def test_run_etl_with_retry(
@@ -125,7 +108,6 @@ def test_run_etl_with_retry(
     mock_handle_etl.side_effect = ["429", "ok"]  # First fail, second retry ok
     run_etl(mock_config, "interest_over_time")
     assert mock_handle_etl.call_count == 2
-
 
 @patch("pytrends_etl.connect_to_postgres")
 @patch("pytrends_etl.handle_etl")

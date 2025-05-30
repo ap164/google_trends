@@ -8,5 +8,6 @@ USER airflow
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port: 8080 (Airflow)
+# Expose Airflow port
 EXPOSE 8080
+

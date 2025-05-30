@@ -10,33 +10,58 @@ def normalize_str_value(value: str) -> str:
 def normalize_country_names(country: str) -> str:
     return country.strip().title() 
 
+
 def normalize_schedule_interval(schedule_interval: str) -> str:
     if not isinstance(schedule_interval, str):
         return schedule_interval
 
-    if schedule_interval.startswith("@"):
-        return schedule_interval[1:]
+    schedule_interval = schedule_interval.strip()
 
-    parts = schedule_interval.strip().split()
-    if len(parts) < 5:
+    # Predefiniowane etykiety
+    if schedule_interval.startswith("@"):
+        return {
+            "@once": "once",
+            "@hourly": "hourly",
+            "@daily": "daily",
+            "@weekly": "weekly",
+            "@monthly": "monthly",
+            "@yearly": "yearly",
+            "@annually": "yearly"
+        }.get(schedule_interval, schedule_interval[1:])
+
+    parts = schedule_interval.split()
+    if len(parts) != 5:
         return schedule_interval
 
-    minute, hour, day, month, day_of_week = parts[:5]
+    minute, hour, day, month, day_of_week = parts
 
-    if all(p == "*" for p in [hour, day, month, day_of_week]) and minute.startswith("*/"):
-        return "minutely"
-    elif minute == "0" and all(p == "*" for p in [hour, day, month, day_of_week]):
+    # minutely: co 1 minutę lub */N
+    if all(p == "*" for p in [hour, day, month, day_of_week]):
+        if minute == "*" or minute == "*/1" or minute.startswith("*/"):
+            return "minutely"
+
+    # hourly: np. 0 * * * *
+    if minute == "0" and all(p == "*" for p in [hour, day, month, day_of_week]):
         return "hourly"
-    elif minute == "0" and hour == "0" and all(p == "*" for p in [day, month, day_of_week]):
+
+    # daily: np. 0 15 * * * lub 0 0 * * *
+    if minute == "0" and hour != "*" and all(p == "*" for p in [day, month, day_of_week]):
         return "daily"
-    elif day_of_week != "*" and all(p == "*" for p in [day, month]):
+
+    # weekly: np. 0 0 * * 1 lub 30 6 * * 0
+    if minute != "*" and hour != "*" and day == "*" and month == "*" and day_of_week != "*":
         return "weekly"
-    elif day != "*" and month == "*" and day_of_week == "*":
+
+    # monthly: np. 15 14 1 * * lub 0 0 1 * *
+    if minute != "*" and hour != "*" and day != "*" and month == "*" and day_of_week == "*":
         return "monthly"
-    elif month != "*":
+
+    # yearly: np. 0 12 15 6 *
+    if minute != "*" and hour != "*" and day != "*" and month != "*" and day_of_week == "*":
         return "yearly"
 
     return schedule_interval
+
 
 def resample_to_hourly(df: pd.DataFrame, value_col: str, keyword: str) -> pd.DataFrame:
     if isinstance(df, pd.DataFrame) and "date" in df.columns:
