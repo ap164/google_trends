@@ -2,6 +2,8 @@
 
 *🇵🇱 Polish version below*
 
+
+**
 ## Project Description  
 This project demonstrates a comprehensive process for acquiring, processing, and analyzing data on the popularity of search queries in Google Search. Data is retrieved using the PyTrends library (an unofficial Google Trends API) and processed through automated Apache Airflow pipelines that schedule and execute the entire ETL workflow. The results are stored in a PostgreSQL relational database and finally visualized in interactive dashboards created with Apache Superset, enabling in-depth trend analysis. The project is fully built using open-source tools.
 
@@ -45,7 +47,7 @@ An example dashboard created to analyze trends in data visualization tools (Powe
 ## Summary
 It is a fully open-source data pipeline project that collects and analyzes search trends from Google Trends using Python, PyTrends, Apache Airflow, and PostgreSQL. Results are visualized with Apache Superset in interactive dashboards for easy trend exploration by time and region.
 
-
+* This project is provided **for educational and demonstrational purposes only**
 
 
 # PL: 
@@ -93,5 +95,6 @@ Przykładowy dashboard stworzony do analizy trendów popularności narzędzi do 
 ## Podsumowanie
 Jest to projekt oparty na narzędziach open-source, pobierający i analizujący trendy wyszukiwań z Google Trends za pomocą Python, PyTrends, Apache Airflow i PostgreSQL. Wyniki prezentowane są w interaktywnych dashboardach w Apache Superset – umożliwiających analizę trendów w czasie oraz w różnych regionach.
 
+*Ten projekt służy **wyłącznie celom edukacyjnym i demonstracyjnym** 
 
 #GoogleTrends #DataEngineering #BusinessIntelligence #ApacheAirflow #ApacheSuperset #PostgreSQL #ETL #OpenSource #DataPipeline #Python #Docker #SQL #TrendAnalysis #DataVisualization #DataAnalytics
