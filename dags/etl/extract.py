@@ -4,6 +4,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 def extract_interest_over_time(pytrends, keyword, timeframe, category, geo, gprop):
+    """
+    Retrieves Google Trends data for interest over time for the given keyword.
+
+    Args:
+        pytrends: Instance of the pytrends object.
+        keyword (str): Keyword to search for.
+        timeframe (str): Time range (e.g., 'today 12-m').
+        category (int): Google Trends category.
+        geo (str): Country or region code (e.g., 'PL').
+        gprop (str): Search type (e.g., 'images', 'news', 'youtube', or '').
+
+    Returns:
+        DataFrame: Interest over time data if available.
+        str: Error message or empty response message.
+    """
     try:
         time.sleep(50) 
         pytrends.build_payload([keyword], cat=category, timeframe=timeframe, geo=geo, gprop=gprop)
@@ -24,6 +39,20 @@ def extract_interest_over_time(pytrends, keyword, timeframe, category, geo, gpro
             return error_msg
 
 def extract_interest_by_region(pytrends, keyword, category, geo, gprop):
+    """
+    Retrieves Google Trends data for interest by region for the given keyword.
+
+    Args:
+        pytrends: Instance of the pytrends object.
+        keyword (str): Keyword to search for.
+        category (int): Google Trends category.
+        geo (str): Country or region code (e.g., 'PL').
+        gprop (str): Search type (e.g., 'images', 'news', 'youtube', or '').
+
+    Returns:
+        DataFrame: Interest by region data if available.
+        str: Error message or empty response message.
+    """
     try:
         time.sleep(50) 
         pytrends.build_payload([keyword], cat=category, geo=geo, gprop=gprop)

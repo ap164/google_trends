@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class InterestOverTimeConfig(BaseModel):
+    """
+    Pydantic model for 'interest_over_time' configuration section.
+    """
     timeframe: str
     category: Optional[int]
     geo: Optional[str]
@@ -20,12 +23,18 @@ class InterestOverTimeConfig(BaseModel):
     schedule_interval: str
 
 class InterestByRegionConfig(BaseModel):
+    """
+    Pydantic model for 'interest_by_region' configuration section.
+    """
     category: Optional[int]
     geo: Optional[str]
     gprop: Optional[str]
     schedule_interval: str
 
 class PytrendsConfig(BaseModel):
+    """
+    Pydantic model for a single pytrends configuration.
+    """
     topic: str
     keywords: List[str]
     interest_by_region: Optional[InterestByRegionConfig] = None
@@ -33,11 +42,17 @@ class PytrendsConfig(BaseModel):
 
     @field_validator("keywords")
     def keywords_max_5(cls, v):
+        """
+        Ensures that the keywords list has at most 5 elements.(api restrictions)
+        """
         if len(v) > 5:
             raise ValueError("keywords can have a maximum of 5 elements")
         return v
 
 class Config(BaseModel):
+    """
+    Pydantic model for the main configuration.
+    """
     log_level: str
     postgres: Dict[str, Any]
     email: Dict[str, Any]
@@ -48,7 +63,12 @@ class Config(BaseModel):
 load_dotenv(dotenv_path="/Users/aniaprus/airflow-docker/.env")
 
 def load_config():
-    """Loads config.yaml, replaces environment variables and validates types."""
+    """
+    Loads config.yaml, replaces environment variables and validates types.
+
+    Returns:
+        dict: Validated configuration dictionary.
+    """
     with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as f:
         config = yaml.safe_load(f)
 

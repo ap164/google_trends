@@ -26,6 +26,19 @@ default_args = {
 }
 
 def execute_sql_query():
+    """
+    Executes a set of SQL statements to generate and update Google Trends BI reports in the PostgreSQL database.
+
+    This function connects to the PostgreSQL database, runs a series of SQL commands to:
+    - Refresh the interest_by_region_report_new table with the latest data.
+    - Create and update the interest_over_time_report_history table with daily aggregated values.
+    - Update the interest_over_time_report_avg_value_hour table with average values per hour.
+    Commits all changes and closes the connection.
+
+    Raises:
+        ConnectionError: If the database connection fails.
+        Exception: If SQL execution fails.
+    """
     connection = connect_to_postgres(
         host=POSTGRES["host"],
         db=POSTGRES["db"],
@@ -112,6 +125,11 @@ def execute_sql_query():
         raise
 
 def send_success_email():
+    """
+    Sends a notification email indicating that the Google Trends BI report DAG has succeeded.
+
+    Uses the configured sender and recipient email addresses and credentials.
+    """
     send_email(
         subject="DAG BI_GOOGLE_TRENDS_REPORT succeeded - Airflow",
         message="The Google Trends report has been generated successfully.",

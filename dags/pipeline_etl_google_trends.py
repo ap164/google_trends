@@ -37,6 +37,17 @@ default_args = {
 }
 
 def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
+    """
+    Handles the ETL process for a given keyword and data type.
+
+    Args:
+        keyword (str): The keyword to process.
+        data_type (str): The type of data to process ('interest_over_time' or 'interest_by_region').
+        config (dict): Configuration dictionary.
+        pytrends: Pytrends TrendReq instance.
+        cursor: Database cursor.
+        connection: Database connection.
+    """
     try:
         if data_type == "interest_over_time":
             params = {k: v for k, v in config["interest_over_time"].items() if k != "schedule_interval"}
@@ -89,6 +100,14 @@ def handle_etl(keyword, data_type, config, pytrends, cursor, connection):
         raise
 
 def run_etl(config, data_type):
+    """
+    Runs the ETL process for all keywords in the configuration for a given data type.
+
+    Args:
+        config (dict): Configuration dictionary.
+        data_type (str): The type of data to process.
+
+    """
     connection = connect_to_postgres(POSTGRES["host"], POSTGRES["db"], POSTGRES["user"], POSTGRES["password"])
     if not connection:
         raise ConnectionError("Failed to connect to the database.")
@@ -117,6 +136,19 @@ def run_etl(config, data_type):
     connection.close()
 
 def create_dag(dag_id, schedule_interval, keywords, config, data_type):
+    """
+    Creates an Airflow DAG for the ETL process.
+
+    Args:
+        dag_id (str): The DAG ID.
+        schedule_interval (str): The schedule interval for the DAG.
+        keywords (list): List of keywords for the DAG.
+        config (dict): Configuration dictionary.
+        data_type (str): The type of data to process.
+
+    Returns:
+        DAG: The created Airflow DAG.
+    """
     with DAG(
         dag_id=dag_id,
         default_args=default_args,

@@ -10,6 +10,18 @@ from etl.validation import (
 logger = logging.getLogger(__name__)
 
 def transform_interest_over_time(data, keyword, channel, schedule_interval):
+    """
+    Transforms and validates Google Trends 'interest over time' data.
+
+    Args:
+        data (DataFrame): Raw interest over time data.
+        keyword (str): Keyword for which data was retrieved.
+        channel (str): Channel type (e.g., 'web', 'news', etc.).
+        schedule_interval (str): Schedule interval for the data load.
+
+    Returns:
+        tuple: (Transformed DataFrame, normalized schedule_interval, normalized keyword)
+    """
     try:
         logger.info(f"Transforming interest_over_time: '{keyword}'")
 
@@ -37,6 +49,17 @@ def transform_interest_over_time(data, keyword, channel, schedule_interval):
 
 
 def transform_interest_by_region(data, keyword, schedule_interval):
+    """
+    Transforms and validates Google Trends 'interest by region' data.
+
+    Args:
+        data (DataFrame): Raw interest by region data.
+        keyword (str): Keyword for which data was retrieved.
+        schedule_interval (str): Schedule interval for the data load.
+
+    Returns:
+        tuple: (Transformed DataFrame, normalized schedule_interval, normalized keyword)
+    """
     try:
         logger.info(f"Transforming interest_by_region: '{keyword}'")
 
